@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raised By Locals</title>
+<link href="https://fonts.googleapis.com/css2?family=Jim+Nightshade&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --charcoal: #1a1a18;
+  --charcoal-mid: #222220;
+  --charcoal-light: #2c2c28;
+  --charcoal-border: #3a3a30;
+  --cream: #f0e8d8;
+  --cream-dim: #c8bfad;
+  --moss: #4a6741;
+  --moss-bright: #6a9460;
+  --moss-glow: rgba(74,103,65,0.22);
+  --lilac: #9b8ec4;
+  --lilac-bright: #b8adda;
+  --lilac-dim: #7a6ea0;
+  --lilac-glow: rgba(155,142,196,0.18);
+  --rust: #b85c38;
+  --rust-bright: #d4734f;
+  --amber: #c49a3a;
+  --text-main: #f0e8d8;
+  --text-mid: #b8ad9e;
+  --text-dim: #7a7268;
+  --border: rgba(240,232,216,0.07);
+  --border-mid: rgba(240,232,216,0.14);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Crimson Pro', serif; background: var(--charcoal); color: var(--text-main); min-height: 100vh; }
+
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 8888; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+.modal-overlay.hidden { display: none; }
+.modal-box { background: var(--charcoal-mid); border: 1px solid var(--charcoal-border); border-radius: 14px; max-width: 420px; width: 100%; padding: 2rem 1.8rem; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.7); }
+.modal-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--rust), var(--amber), var(--rust)); border-radius: 14px 14px 0 0; }
+.modal-title { font-family: 'Jim Nightshade', cursive; font-size: 1.7rem; color: var(--cream); margin-bottom: 0.8rem; line-height: 1.2; }
+.modal-body { font-size: 14px; color: var(--text-mid); line-height: 1.8; margin-bottom: 1.5rem; }
+.modal-body strong { color: var(--cream-dim); }
+.modal-agree { width: 100%; padding: 13px; background: var(--moss); border: none; border-radius: 6px; color: var(--cream); font-family: 'Jim Nightshade', cursive; font-size: 16px; cursor: pointer; letter-spacing: 0.04em; transition: background 0.2s; }
+.modal-agree:hover { background: var(--moss-bright); }
+
+/* HEADER */
+.header { background: var(--charcoal-mid); border-bottom: 1px solid var(--charcoal-border); position: relative; }
+.header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--lilac-dim), var(--moss-bright), var(--lilac-dim), transparent); opacity: 0.5; }
+.header-inner { max-width: 860px; margin: 0 auto; padding: 1.4rem 2rem 1.2rem; display: flex; align-items: center; gap: 1.2rem; }
+.header-possum { font-size: 2rem; line-height: 1; flex-shrink: 0; }
+.header-text { flex: 1; }
+.header-eyebrow { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); opacity: 0.6; margin-bottom: 2px; }
+.header-title { font-family: 'Jim Nightshade', cursive; font-size: 2rem; color: var(--cream); line-height: 1.0; }
+.header-title .accent { color: var(--lilac-bright); }
+.header-sub { font-style: italic; font-size: 13px; color: var(--text-mid); margin-top: 2px; }
+.header-badge { flex-shrink: 0; background: var(--lilac-glow); border: 1px solid rgba(155,142,196,0.28); border-radius: 4px; padding: 4px 10px; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--lilac-bright); letter-spacing: 0.1em; text-transform: uppercase; display: none; }
+.header-badge.visible { display: block; }
+
+/* SCREENS */
+.screen { display: none; }
+.screen.active { display: block; }
+.screen-wrap { max-width: 480px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+/* BASE CARD */
+.card { background: var(--charcoal-mid); border: 1px solid var(--charcoal-border); border-radius: 12px; padding: 2.2rem 2rem; box-shadow: 0 8px 40px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+.card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--moss), var(--lilac-dim), var(--moss)); opacity: 0.6; }
+.card-title { font-family: 'Jim Nightshade', cursive; font-size: 1.9rem; color: var(--cream); margin-bottom: 0.4rem; line-height: 1.1; }
+.card-sub { font-size: 15px; color: var(--text-mid); margin-bottom: 2rem; line-height: 1.7; font-style: italic; }
+.field-label { display: block; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; margin-top: 1.4rem; }
+.field-label:first-of-type { margin-top: 0; }
+.req { color: var(--lilac); margin-left: 4px; }
+input[type="text"], input[type="email"], input[type="tel"] { width: 100%; background: var(--charcoal); border: 1px solid var(--charcoal-border); border-radius: 6px; padding: 12px 14px; color: var(--cream); font-family: 'Crimson Pro', serif; font-size: 16px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+input:focus { border-color: var(--lilac-dim); box-shadow: 0 0 0 3px var(--lilac-glow); }
+input::placeholder { color: var(--text-dim); font-style: italic; }
+.btn { width: 100%; margin-top: 1.6rem; padding: 13px; background: var(--moss); border: none; border-radius: 6px; color: var(--cream); font-family: 'Jim Nightshade', cursive; font-size: 15px; cursor: pointer; letter-spacing: 0.04em; transition: background 0.2s, transform 0.1s; box-shadow: 0 2px 14px rgba(74,103,65,0.3); }
+.btn:hover { background: var(--moss-bright); }
+.btn:active { transform: scale(0.99); }
+.btn-ghost { background: transparent; border: 1px solid var(--charcoal-border); color: var(--text-mid); margin-top: 0.6rem; font-family: 'DM Mono', monospace; font-size: 10px; box-shadow: none; letter-spacing: 0.1em; text-transform: uppercase; }
+.btn-ghost:hover { background: rgba(240,232,216,0.04); color: var(--cream-dim); }
+.code-inputs { display: flex; gap: 10px; justify-content: center; margin: 1.5rem 0; }
+.code-digit { width: 56px; height: 64px; background: var(--charcoal); border: 1px solid var(--charcoal-border); border-radius: 6px; text-align: center; font-size: 24px; color: var(--cream); font-family: 'Jim Nightshade', cursive; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+.code-digit:focus { border-color: var(--lilac-dim); box-shadow: 0 0 0 3px var(--lilac-glow); }
+.demo-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(155,142,196,0.07); border: 1px solid rgba(155,142,196,0.18); border-radius: 4px; padding: 5px 12px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--lilac-dim); letter-spacing: 0.06em; margin-bottom: 1.2rem; }
+.verify-note { font-size: 13px; color: var(--text-dim); text-align: center; line-height: 1.7; margin-top: 1rem; font-style: italic; }
+.error-text { font-size: 13px; color: var(--rust-bright); margin-top: 7px; font-style: italic; }
+.optional-note { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-dim); text-align: center; margin-top: 0.8rem; letter-spacing: 0.06em; }
+
+/* VIBE TILES */
+#screen-vibe .screen-wrap { max-width: 620px; }
+.vibe-section { margin-bottom: 2.2rem; }
+.vibe-section-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--moss-bright); margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+.vibe-section-label::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--charcoal-border), transparent); }
+.vibe-question { font-size: 1.2rem; color: var(--cream); font-style: italic; margin-bottom: 12px; line-height: 1.4; }
+.tile-grid { display: grid; gap: 8px; }
+.tile-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+.tile-grid.cols-wrap { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+.tile { background: var(--charcoal-light); border: 1px solid var(--charcoal-border); border-radius: 8px; padding: 12px 13px; cursor: pointer; transition: all 0.15s; text-align: left; position: relative; overflow: hidden; }
+.tile:hover { border-color: rgba(155,142,196,0.32); background: rgba(155,142,196,0.05); }
+.tile.selected { border-color: var(--lilac-dim); background: var(--lilac-glow); box-shadow: 0 0 14px rgba(155,142,196,0.12); }
+.tile-icon { font-size: 1.25rem; display: block; margin-bottom: 5px; }
+.tile-label { font-size: 13px; font-weight: 500; color: var(--cream); line-height: 1.3; }
+.tile-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; font-style: italic; line-height: 1.4; }
+.tile-check { position: absolute; top: 7px; right: 7px; width: 14px; height: 14px; border-radius: 50%; background: var(--lilac); display: none; align-items: center; justify-content: center; font-size: 8px; color: #fff; }
+.tile.selected .tile-check { display: flex; }
+.vibe-continue { background: var(--lilac-dim); box-shadow: 0 2px 16px rgba(155,142,196,0.28); font-family: 'Jim Nightshade', cursive; font-size: 15px; }
+.vibe-continue:hover { background: var(--lilac); }
+
+/* CHAT */
+#screen-chat { background: var(--charcoal); }
+.chat-shell { max-width: 680px; margin: 0 auto; padding: 0 1rem; display: flex; flex-direction: column; height: calc(100vh - 108px); }
+.chat-header-strip { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; flex-shrink: 0; border-bottom: 1px solid var(--charcoal-border); }
+.baby-status { display: flex; align-items: center; gap: 10px; }
+.baby-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--charcoal-light); border: 1px solid var(--charcoal-border); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.baby-name { font-family: 'Jim Nightshade', cursive; font-size: 16px; color: var(--cream); letter-spacing: 0.03em; }
+.pulse-dot { display: inline-block; width: 6px; height: 6px; background: var(--moss-bright); border-radius: 50%; margin-left: 7px; vertical-align: middle; animation: pulsedot 2s infinite; }
+.baby-sub { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-dim); letter-spacing: 0.06em; }
+.ai-caveat-strip { font-family: 'DM Mono', monospace; font-size: 8px; color: var(--text-dim); text-align: right; line-height: 1.6; max-width: 180px; }
+.chat-messages { flex: 1; overflow-y: auto; padding: 1.2rem 0; display: flex; flex-direction: column; gap: 12px; }
+.chat-messages::-webkit-scrollbar { width: 2px; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--charcoal-border); border-radius: 2px; }
+
+/* MESSAGES */
+.msg { display: flex; gap: 10px; align-items: flex-end; max-width: 88%; animation: fadeUp 0.25s ease; }
+.msg.user { align-self: flex-end; flex-direction: row-reverse; }
+.msg.baby { align-self: flex-start; }
+.avatar { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; background: var(--charcoal-light); border: 1px solid var(--charcoal-border); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.user .avatar { background: var(--moss); font-family: 'Jim Nightshade', cursive; font-size: 13px; color: var(--cream); border-color: var(--moss); }
+.bubble { padding: 11px 15px; border-radius: 12px; font-size: 15px; line-height: 1.7; }
+.baby .bubble { background: var(--charcoal-mid); border: 1px solid var(--charcoal-border); color: var(--cream-dim); border-bottom-left-radius: 3px; }
+.user .bubble { background: var(--moss); color: var(--cream); border-bottom-right-radius: 3px; }
+.qr-row { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 40px; margin-top: 4px; animation: fadeUp 0.3s ease; }
+.qr { background: transparent; border: 1px solid var(--charcoal-border); border-radius: 4px; padding: 5px 12px; font-size: 12px; color: var(--text-mid); cursor: pointer; transition: all 0.15s; font-family: 'DM Mono', monospace; letter-spacing: 0.03em; }
+.qr:hover { background: rgba(240,232,216,0.04); border-color: var(--border-mid); color: var(--cream); }
+.typing-dots { display: flex; align-items: center; gap: 5px; padding: 11px 14px; }
+.typing-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--lilac-dim); animation: bounce 1.2s infinite; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+.search-status { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--lilac-dim); padding: 3px 0 3px 40px; letter-spacing: 0.04em; animation: fadeUp 0.3s ease; font-style: italic; }
+
+/* GUIDE CARDS */
+.guide-intro { background: var(--charcoal-light); border: 1px solid var(--charcoal-border); border-left: 3px solid var(--lilac-dim); border-radius: 8px; padding: 13px 16px; margin-left: 40px; margin-top: 6px; color: var(--cream-dim); font-size: 15px; line-height: 1.7; font-style: italic; animation: fadeUp 0.3s ease; }
+.guide-cards-wrap { margin-left: 40px; margin-top: 8px; display: flex; flex-direction: column; gap: 9px; }
+.click-hint { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--lilac-dim); letter-spacing: 0.06em; text-align: left; margin: 0 0 4px 40px; font-style: italic; animation: fadeUp 0.4s ease; }
+.guide-card { background: var(--charcoal-mid); border: 1px solid var(--charcoal-border); border-radius: 10px; padding: 13px 15px 13px 18px; animation: fadeUp 0.35s ease; position: relative; overflow: hidden; cursor: pointer; transition: border-color 0.2s, transform 0.15s; user-select: none; }
+.guide-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+.guide-card.vibe-music::before { background: var(--lilac); }
+.guide-card.vibe-food::before { background: var(--rust-bright); }
+.guide-card.vibe-arts::before { background: #5a9abf; }
+.guide-card.vibe-market::before { background: var(--moss-bright); }
+.guide-card.vibe-free::before { background: var(--amber); }
+.guide-card.vibe-weird::before { background: #b87dc4; }
+.guide-card.vibe-outdoors::before { background: var(--moss-bright); }
+.guide-card.vibe-bars::before { background: var(--amber); }
+.guide-card.vibe-daytrip::before { background: var(--rust); }
+.guide-card.vibe-default::before { background: var(--lilac-dim); }
+.guide-card:hover { border-color: rgba(155,142,196,0.28); transform: translateX(2px); }
+.guide-card.liked { border-color: var(--lilac-dim); background: rgba(155,142,196,0.07); }
+.like-heart { position: absolute; top: 10px; right: 10px; font-size: 13px; opacity: 0; transition: opacity 0.2s, transform 0.2s; transform: scale(0.5); color: var(--lilac-bright); font-style: normal; }
+.guide-card.liked .like-heart { opacity: 1; transform: scale(1); }
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 5px; }
+.guide-card-name { font-size: 16px; font-weight: 600; color: var(--cream); line-height: 1.2; padding-right: 20px; }
+.guide-vibe-tag { flex-shrink: 0; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.07em; text-transform: uppercase; padding: 3px 7px; border-radius: 3px; background: rgba(240,232,216,0.04); color: var(--text-dim); white-space: nowrap; }
+.guide-card-desc { font-size: 13px; color: var(--cream-dim); line-height: 1.65; margin-bottom: 7px; }
+.guide-card-baby { font-size: 12px; color: var(--lilac-bright); font-style: italic; line-height: 1.6; border-top: 1px solid var(--charcoal-border); padding-top: 7px; margin-top: 3px; }
+.baby-take-label { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.1em; color: var(--text-dim); text-transform: uppercase; display: block; margin-bottom: 2px; font-style: normal; }
+.guide-card-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 7px; }
+.guide-meta-pill { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-mid); letter-spacing: 0.04em; }
+.guide-meta-sep { color: var(--charcoal-border); }
+.card-link { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--moss-bright); letter-spacing: 0.06em; text-decoration: none; border: 1px solid rgba(106,148,96,0.3); border-radius: 3px; padding: 3px 8px; transition: all 0.15s; }
+.card-link:hover { background: var(--moss-glow); color: var(--cream); }
+.resv-pill { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; margin-left: 6px; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--amber); letter-spacing: 0.06em; border: 1px solid rgba(196,154,58,0.3); border-radius: 3px; padding: 3px 8px; }
+
+/* FOLLOWUP */
+.followup-block { background: var(--charcoal-light); border: 1px solid var(--charcoal-border); border-left: 3px solid var(--moss-bright); border-radius: 8px; padding: 14px 16px; margin-left: 40px; margin-top: 8px; animation: fadeUp 0.35s ease; }
+.followup-title { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--moss-bright); margin-bottom: 10px; }
+.followup-options { display: flex; flex-wrap: wrap; gap: 7px; }
+.followup-btn { background: transparent; border: 1px solid var(--charcoal-border); border-radius: 4px; padding: 8px 14px; font-family: 'Crimson Pro', serif; font-size: 14px; font-style: italic; color: var(--cream); cursor: pointer; transition: all 0.15s; }
+.followup-btn:hover { border-color: var(--moss); background: var(--moss-glow); }
+
+/* SMS BLOCK */
+.sms-block { background: var(--charcoal-light); border: 1px solid rgba(155,142,196,0.22); border-radius: 10px; padding: 16px 18px; margin-left: 40px; margin-top: 8px; animation: fadeUp 0.35s ease; }
+.sms-block-title { font-family: 'Jim Nightshade', cursive; font-size: 15px; color: var(--lilac-bright); margin-bottom: 6px; }
+.sms-block-sub { font-size: 13px; color: var(--text-mid); line-height: 1.6; margin-bottom: 12px; font-style: italic; }
+.sms-note { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-dim); margin-top: 8px; letter-spacing: 0.04em; line-height: 1.6; }
+.sms-btns { display: flex; gap: 8px; margin-top: 10px; }
+.sms-btn { flex: 1; padding: 9px; border-radius: 5px; font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; letter-spacing: 0.08em; text-transform: uppercase; transition: all 0.15s; border: none; }
+.sms-btn-send { background: var(--lilac-dim); color: var(--cream); }
+.sms-btn-send:hover { background: var(--lilac); }
+.sms-btn-skip { background: transparent; border: 1px solid var(--charcoal-border); color: var(--text-dim); }
+
+/* ACCOUNT */
+.account-banner { background: var(--charcoal-light); border: 1px solid rgba(155,142,196,0.22); border-radius: 10px; padding: 18px; margin-left: 40px; margin-top: 10px; animation: fadeUp 0.35s ease; }
+.account-banner-title { font-family: 'Jim Nightshade', cursive; font-size: 16px; color: var(--lilac-bright); margin-bottom: 6px; }
+.account-banner-sub { font-size: 13px; color: var(--text-mid); line-height: 1.65; margin-bottom: 12px; font-style: italic; }
+.account-mini-input { background: var(--charcoal); border: 1px solid var(--charcoal-border); border-radius: 5px; padding: 9px 12px; font-family: 'Crimson Pro', serif; font-size: 14px; color: var(--cream); outline: none; width: 100%; transition: border-color 0.2s; margin-bottom: 7px; }
+.account-mini-input:focus { border-color: var(--lilac-dim); }
+.account-mini-input::placeholder { color: var(--text-dim); font-style: italic; }
+.account-banner-btns { display: flex; gap: 8px; margin-top: 6px; }
+.acct-btn { flex: 1; padding: 9px; border-radius: 5px; font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; letter-spacing: 0.08em; text-transform: uppercase; transition: all 0.15s; border: none; }
+.acct-btn-yes { background: var(--lilac-dim); color: var(--cream); }
+.acct-btn-yes:hover { background: var(--lilac); }
+.acct-btn-no { background: transparent; border: 1px solid var(--charcoal-border); color: var(--text-dim); }
+
+/* INPUT BAR */
+.chat-input-bar { display: flex; gap: 8px; align-items: center; padding: 0.8rem 0 0.5rem; border-top: 1px solid var(--charcoal-border); flex-shrink: 0; }
+.chat-input { flex: 1; background: var(--charcoal-mid); border: 1px solid var(--charcoal-border); border-radius: 6px; padding: 11px 16px; color: var(--cream); font-family: 'Crimson Pro', serif; font-size: 15px; outline: none; transition: border-color 0.2s; }
+.chat-input:focus { border-color: var(--lilac-dim); }
+.chat-input::placeholder { color: var(--text-dim); font-style: italic; }
+.send-btn { width: 40px; height: 40px; border-radius: 6px; background: var(--moss); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
+.send-btn:hover { background: var(--moss-bright); }
+.send-btn svg { width: 15px; height: 15px; fill: var(--cream); }
+.ai-footer { font-family: 'DM Mono', monospace; font-size: 8px; color: var(--text-dim); text-align: center; padding: 0.4rem 0 0.8rem; letter-spacing: 0.04em; line-height: 1.6; flex-shrink: 0; }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+@keyframes bounce { 0%,60%,100% { transform:translateY(0); opacity:0.35; } 30% { transform:translateY(-5px); opacity:1; } }
+@keyframes pulsedot { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+/* PICKED BANNER */
+.picked-banner { background: var(--lilac-glow); border: 1px solid rgba(155,142,196,0.3); border-radius: 8px; padding: 10px 16px; margin-left: 40px; margin-top: 6px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--lilac-bright); letter-spacing: 0.08em; text-transform: uppercase; animation: fadeUp 0.25s ease; }
+
+/* WEATHER CARD */
+.weather-card { background: var(--charcoal-light); border: 1px solid var(--charcoal-border); border-left: 3px solid #5a9abf; border-radius: 10px; padding: 14px 16px; margin-left: 40px; margin-top: 6px; animation: fadeUp 0.3s ease; }
+.weather-card-title { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #5a9abf; margin-bottom: 10px; }
+.weather-days { display: flex; gap: 8px; flex-wrap: wrap; }
+.weather-day { flex: 1; min-width: 70px; background: var(--charcoal-mid); border: 1px solid var(--charcoal-border); border-radius: 8px; padding: 10px 8px; text-align: center; }
+.weather-day-name { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+.weather-day-icon { font-size: 1.4rem; margin-bottom: 5px; display: block; }
+.weather-day-temp { font-size: 15px; font-weight: 600; color: var(--cream); }
+.weather-day-desc { font-family: 'DM Mono', monospace; font-size: 8px; color: var(--text-dim); margin-top: 3px; letter-spacing: 0.04em; }
+
+/* PDF PROMPT */
+.pdf-prompt { background: var(--charcoal-light); border: 1px solid rgba(196,154,58,0.3); border-left: 3px solid var(--amber); border-radius: 8px; padding: 12px 16px; margin-left: 40px; margin-top: 6px; animation: fadeUp 0.3s ease; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pdf-prompt-text { font-size: 13px; color: var(--cream-dim); font-style: italic; line-height: 1.5; }
+.pdf-prompt-btn { flex-shrink: 0; background: var(--amber); border: none; border-radius: 5px; padding: 8px 14px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--charcoal); cursor: pointer; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500; transition: opacity 0.15s; white-space: nowrap; }
+.pdf-prompt-btn:hover { opacity: 0.85; }
+
+@media (max-width:520px) {
+  .tile-grid.cols-wrap { grid-template-columns: 1fr 1fr; }
+  .header-title { font-size: 1.6rem; }
+  .guide-cards-wrap,.guide-intro,.click-hint,.followup-block,.account-banner,.sms-block { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="modal-overlay" id="safety-modal">
+  <div class="modal-box">
+    <div class="modal-title">Before we get into it</div>
+    <div class="modal-body">
+      <strong>New Orleans is a city that rewards the curious and the careful.</strong> Baby is here to help you find what is worth doing, but this is still NOLA. Use your head, stay aware of your surroundings, and trust your instincts.<br><br>
+      Baby is an AI. Recommendations may be incomplete, outdated, or just plain wrong. <strong>Always verify before you go.</strong> Raised By Locals is not responsible for anything that happens as a result of using this tool. By continuing, you are choosing to use it at your own discretion.<br><br>
+      <span style="color:var(--text-dim);font-size:13px">Go have a good time. Just be smart about it.</span>
+    </div>
+    <button class="modal-agree" onclick="closeSafetyModal()">Got it -- let's go</button>
+  </div>
+</div>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-possum">&#x1F43E;</div>
+    <div class="header-text">
+      <div class="header-eyebrow">New Orleans</div>
+      <div class="header-title">Raised By <span class="accent">Locals</span></div>
+      <div class="header-sub">Baby knows what's good</div>
+    </div>
+    <div class="header-badge" id="user-badge"></div>
+  </div>
+</div>
+
+<div id="screen-email" class="screen active">
+  <div class="screen-wrap">
+    <div class="card">
+      <div class="card-title">Hey, neighbor.</div>
+      <div class="card-sub">Drop your email and Baby'll find you something worth doing. Locals only.</div>
+      <span class="field-label">Your Email <span class="req">&#x2736;</span></span>
+      <input type="email" id="email-input" placeholder="you@example.com">
+      <div id="email-error" class="error-text" style="display:none"></div>
+      <button class="btn" onclick="submitEmail()">Let's go</button>
+      <div class="optional-note" style="margin-top:1rem">That's it. Everything else is optional.</div>
+    </div>
+  </div>
+</div>
+
+<div id="screen-verify" class="screen">
+  <div class="screen-wrap">
+    <div class="card" style="text-align:center">
+      <div class="card-title">Check your inbox</div>
+      <div class="card-sub">We sent a code to <strong id="verify-email-display" style="color:var(--lilac-bright);font-style:normal"></strong></div>
+      <div style="display:flex;justify-content:center;margin-bottom:0.5rem"><span class="demo-badge">demo -- use code 1234</span></div>
+      <div class="code-inputs">
+        <input type="text" class="code-digit" maxlength="1" id="d1">
+        <input type="text" class="code-digit" maxlength="1" id="d2">
+        <input type="text" class="code-digit" maxlength="1" id="d3">
+        <input type="text" class="code-digit" maxlength="1" id="d4">
+      </div>
+      <div id="verify-error" class="error-text" style="display:none;text-align:center;margin-bottom:8px"></div>
+      <button class="btn" onclick="verifyCode()" style="margin-top:0.5rem">Verify</button>
+      <button class="btn btn-ghost" onclick="showScreen('screen-email')">Back</button>
+      <p class="verify-note">Didn't get it? <span style="color:var(--lilac);cursor:pointer" id="resend-link">Resend code</span></p>
+    </div>
+  </div>
+</div>
+
+<div id="screen-vibe" class="screen">
+  <div class="screen-wrap">
+    <div class="card">
+      <div class="card-title">Tell Baby a little.</div>
+      <div class="card-sub">All optional -- the more you share, the better the picks.</div>
+
+      <div class="vibe-section">
+        <div class="vibe-section-label">01 -- When</div>
+        <div class="vibe-question">What are we planning for?</div>
+        <div class="tile-grid cols-2">
+          <button class="tile" data-group="time" data-val="tonight"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x1F319;</span><div class="tile-label">Tonight</div><div class="tile-sub">Let's do something now</div></button>
+          <button class="tile" data-group="time" data-val="this week"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x1F4C6;</span><div class="tile-label">This Week</div><div class="tile-sub">Sometime in the next few days</div></button>
+          <button class="tile" data-group="time" data-val="this weekend"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x2600;</span><div class="tile-label">This Weekend</div><div class="tile-sub">Saturday and/or Sunday</div></button>
+          <button class="tile" data-group="time" data-val="not sure yet"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x1F937;</span><div class="tile-label">Not Sure Yet</div><div class="tile-sub">Just browsing what's good</div></button>
+        </div>
+      </div>
+
+      <div class="vibe-section">
+        <div class="vibe-section-label">02 -- Vibe &middot; pick all that fit</div>
+        <div class="vibe-question">What are you in the mood for?</div>
+        <div class="tile-grid cols-wrap">
+          <button class="tile" data-group="mood" data-val="food and drink"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x1F37D;</span><div class="tile-label">Food &amp; drink</div></button>
+          <button class="tile" data-group="mood" data-val="live music"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x1F3B7;</span><div class="tile-label">Live music</div></button>
+          <button class="tile" data-group="mood" data-val="arts and film"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x1F3AC;</span><div class="tile-label">Arts &amp; film</div></button>
+          <button class="tile" data-group="mood" data-val="markets"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x1F33F;</span><div class="tile-label">Markets</div></button>
+          <button class="tile" data-group="mood" data-val="free events"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x1F194;</span><div class="tile-label">Free stuff</div></button>
+          <button class="tile" data-group="mood" data-val="underground or weird"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x1F441;</span><div class="tile-label">Underground</div></button>
+          <button class="tile" data-group="mood" data-val="outdoor and active"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x1F333;</span><div class="tile-label">Outdoors</div></button>
+          <button class="tile" data-group="mood" data-val="bars and nightlife"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x1F379;</span><div class="tile-label">Nightlife</div></button>
+          <button class="tile" data-group="mood" data-val="day trip out of the city"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x1F697;</span><div class="tile-label">Day trip</div></button>
+        </div>
+      </div>
+
+      <div class="vibe-section" style="margin-bottom:0">
+        <div class="vibe-section-label">03 -- Where</div>
+        <div class="vibe-question">What part of town?</div>
+        <div class="tile-grid cols-wrap">
+          <button class="tile" data-group="hood" data-val="Bywater or Marigny"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x1F3D8;</span><div class="tile-label">Bywater / Marigny</div></button>
+          <button class="tile" data-group="hood" data-val="Uptown"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x1F333;</span><div class="tile-label">Uptown</div></button>
+          <button class="tile" data-group="hood" data-val="Mid-City"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x1F6B2;</span><div class="tile-label">Mid-City</div></button>
+          <button class="tile" data-group="hood" data-val="Algiers"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x26F5;</span><div class="tile-label">Algiers</div></button>
+          <button class="tile" data-group="hood" data-val="French Quarter or CBD"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x269C;</span><div class="tile-label">FQ / CBD</div></button>
+          <button class="tile" data-group="hood" data-val="anywhere"><span class="tile-check">&#x2713;</span><span class="tile-icon">&#x1F5FA;</span><div class="tile-label">Anywhere</div></button>
+        </div>
+      </div>
+
+      <button class="btn vibe-continue" onclick="startVibeChat()" style="margin-top:2rem">Ask Baby what's good</button>
+      <div class="optional-note">Skip any section -- Baby works with what you give.</div>
+    </div>
+  </div>
+</div>
+
+<div id="screen-chat" class="screen">
+  <div class="chat-shell">
+    <div class="chat-header-strip">
+      <div class="baby-status">
+        <div class="baby-avatar">&#x1F43E;</div>
+        <div>
+          <div class="baby-name">Baby <span class="pulse-dot"></span></div>
+          <div class="baby-sub">Your NOLA local scout</div>
+        </div>
+      </div>
+      <div class="ai-caveat-strip">Baby is AI -- always<br>double-check before you go.</div>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-bar">
+      <input type="text" class="chat-input" id="chat-input" placeholder="Ask Baby something...">
+      <button class="send-btn" id="send-btn"><svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg></button>
+    </div>
+    <div class="ai-footer">Baby is AI and can make mistakes &middot; Always verify before you go &middot; New Orleans can be unpredictable -- stay aware &middot; Raised By Locals is not liable for outcomes</div>
+  </div>
+</div>
+
+<script>
+var userData = { email:'', name:'', neighborhood:'', hasAccount:false, phone:'' };
+var vibeSelections = { time:null, mood:[], hood:null };
+var chatHistory = [];
+var isTyping = false;
+var guideBuilt = false;
+var accountPromptShown = false;
+var smsPromptShown = false;
+var likedCards = [];
+var awaitingFeedback = false;
+var usedReplies = {};
+
+var messageCount = 0;
+var pdfPromptShown = false;
+var MOCK_ACCOUNTS = { 'local@nola.com': { name:'Remy', neighborhood:'Bywater or Marigny', hasAccount:true } };
+
+var cheekies = [
+  'asking around...',
+  'checking the group chat...',
+  'calling in favors...',
+  'Baby has sources...',
+  'snooping through the right feeds...',
+  'seeing what is actually happening...',
+  'checking the spots that matter...',
+  'pulling strings...',
+  'doing the most...'
+];
+
+function closeSafetyModal() {
+  document.getElementById('safety-modal').className = 'modal-overlay hidden';
+}
+
+function showScreen(id) {
+  var screens = document.querySelectorAll('.screen');
+  for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function submitEmail() {
+  var email = document.getElementById('email-input').value.trim();
+  var err = document.getElementById('email-error');
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    err.textContent = 'A real email, please.';
+    err.style.display = 'block';
+    return;
+  }
+  err.style.display = 'none';
+  userData.email = email;
+  document.getElementById('verify-email-display').textContent = email;
+  showScreen('screen-verify');
+  document.getElementById('d1').focus();
+}
+
+function setupCodeInputs() {
+  var ids = ['d1','d2','d3','d4'];
+  for (var i = 0; i < ids.length; i++) {
+    (function(idx) {
+      var el = document.getElementById(ids[idx]);
+      el.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+        if (this.value && idx < 3) document.getElementById(ids[idx+1]).focus();
+      });
+      el.addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && !this.value && idx > 0) document.getElementById(ids[idx-1]).focus();
+      });
+    })(i);
+  }
+}
+
+function resendCode() {
+  ['d1','d2','d3','d4'].forEach(function(id) { document.getElementById(id).value = ''; });
+  document.getElementById('d1').focus();
+  document.getElementById('verify-error').style.display = 'none';
+}
+
+function verifyCode() {
+  var code = ['d1','d2','d3','d4'].map(function(id) { return document.getElementById(id).value; }).join('');
+  var err = document.getElementById('verify-error');
+  if (code !== '1234') {
+    err.textContent = 'Not quite. Demo code is 1234.';
+    err.style.display = 'block';
+    return;
+  }
+  err.style.display = 'none';
+  if (MOCK_ACCOUNTS[userData.email]) {
+    var acct = MOCK_ACCOUNTS[userData.email];
+    userData.name = acct.name;
+    userData.neighborhood = acct.neighborhood;
+    userData.hasAccount = acct.hasAccount;
+    vibeSelections.hood = acct.neighborhood;
+    var badge = document.getElementById('user-badge');
+    badge.textContent = 'Hey, ' + userData.name;
+    badge.className = 'header-badge visible';
+    showScreen('screen-chat');
+    startChatReturning();
+  } else {
+    showScreen('screen-vibe');
+  }
+}
+
+function selectTile(btn) {
+  var group = btn.dataset.group;
+  var wasSelected = btn.classList.contains('selected');
+  var tiles = document.querySelectorAll('.tile[data-group="' + group + '"]');
+  for (var i = 0; i < tiles.length; i++) tiles[i].classList.remove('selected');
+  if (!wasSelected) {
+    btn.classList.add('selected');
+    vibeSelections[group] = btn.dataset.val;
+  } else {
+    vibeSelections[group] = null;
+  }
+}
+
+function selectMulti(btn) {
+  btn.classList.toggle('selected');
+  var val = btn.dataset.val;
+  var idx = vibeSelections.mood.indexOf(val);
+  if (btn.classList.contains('selected')) {
+    if (idx === -1) vibeSelections.mood.push(val);
+  } else {
+    if (idx > -1) vibeSelections.mood.splice(idx, 1);
+  }
+}
+
+function startVibeChat() { showScreen('screen-chat'); startChatNew(); }
+
+function getBabySystem() {
+  var name = userData.name || 'neighbor';
+  var neighborhood = userData.neighborhood || '';
+  var time = vibeSelections.time || 'unspecified';
+  var mood = vibeSelections.mood;
+  var hood = vibeSelections.hood || neighborhood || 'anywhere';
+  var moodStr = mood.length ? mood.join(', ') : 'open to anything';
+  var wantsDayTrip = mood.indexOf('day trip out of the city') > -1;
+  var now = new Date();
+  var dateStr = now.toLocaleString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric', hour:'numeric', minute:'2-digit', timeZone:'America/Chicago' });
+  var likedStr = likedCards.length ? ' USER LIKED: ' + likedCards.join(', ') + '.' : '';
+  var dayTripStr = wantsDayTrip ? ' DAY TRIPS: Include 1-2 destinations within 500 miles -- Gulf Coast, Mississippi, Memphis, Nashville, Gulf Shores, Pensacola, Texas Hill Country. Include drive time. Mark vibe_type as daytrip.' : '';
+
+  var guideSchema = '{"type":"guide","intro":"One sentence. Warm, wry, specific.","picks":[{"name":"string","vibe_tag":"3-4 words lowercase","vibe_type":"food|music|arts|market|free|weird|outdoors|bars|daytrip","description":"1-2 sentences. What it is and why now.","baby_take":"One honest sentence.","neighborhood":"string","when":"Specific day and start time for events. Omit for standing spots.","url":"Real URL from search or null","reservation":"opentable|resy|call|none"}]}';
+
+  return 'You are Baby -- a deeply plugged-in New Orleans local who always knows what is good.'
+    + ' Not a planner. The friend everyone texts.'
+    + ' Warm, direct, occasionally wry. Peer-level. No disclaimers, no safety tips, no hand-holding.'
+    + ' Short sentences. Real talk.'
+    + ' Always end your response with a natural casual question like "does that work?" or "want me to dig into any of these?" -- not formal, just conversational.'
+    + '\n\nCURRENT DATE/TIME: ' + dateStr + ' Central Time.'
+    + '\n\nEVENTS MUST BE IN THE FUTURE: Every time-specific pick must occur AFTER the timestamp above, down to the hour. Do not recommend anything that has already happened. Ongoing venues like bars and restaurants are fine anytime.'
+    + '\n\nSHOWTIMES REQUIRED: For any show, concert, screening, or ticketed event you must find the actual start time. Do not say check the website. If you cannot confirm the time, skip that event.'
+    + '\n\nRESERVATIONS: For restaurant picks, search OpenTable (opentable.com) and Resy (resy.com) to VERIFY the restaurant actually appears on that platform before including it. Set reservation field to "opentable" only if you confirmed the restaurant is bookable on OpenTable. Set to "resy" only if confirmed on Resy. Set to "none" if you cannot verify. Never guess.'
+    + '\n\nNO INLINE LINKS: Never include URLs, hyperlinks, or website addresses in conversational text or bubble messages. Links and booking buttons only appear on cards.'
+    + '\n\nWEATHER RESPONSES: When asked about weather, respond with max 2-3 sentences of plain text, then output a weather JSON card. Format: {"type":"weather","intro":"1 sentence","days":[{"day":"Saturday","icon":"sunny|cloudy|rainy|stormy|hot|cool","high":85,"low":72,"desc":"Sunny and humid"}]}. Include 2-3 days. No markdown.'
+    + '\n\nSHORT RESPONSES: All conversational replies must be 2-3 sentences maximum. No paragraphs. If more detail is needed, put it on a card, not in a bubble.'
+
+    + '\n\nHYPERLINKS: For every pick find a real URL -- event page, venue website, or booking link. Only include URLs you actually found via search. No fabricated links.'
+    + '\n\nOUTPUT: When delivering picks, respond ONLY with raw JSON matching this schema -- no markdown fences, no text before or after the JSON object:'
+    + '\n' + guideSchema
+    + '\n\nReturn 6-8 picks. Mix categories unless user specified otherwise. Real places only.'
+    + dayTripStr
+    + '\n\nUSER: Name: ' + name + '. Planning for: ' + time + '. Mood: ' + moodStr + '. Neighborhood: ' + hood + '.' + likedStr;
+}
+
+function showErrorBar(msg) {
+  var bar = document.getElementById('error-bar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'error-bar';
+    bar.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#b85c38;color:#fff;font-family:monospace;font-size:11px;padding:6px 12px;z-index:99999;word-break:break-all;line-height:1.5;cursor:pointer;';
+    bar.title = 'Click to dismiss';
+    bar.addEventListener('click', function() { bar.remove(); });
+    document.body.appendChild(bar);
+  }
+  bar.textContent = 'Error: ' + msg;
+}
+
+function callBaby(messages, useSearch, maxTokens, callback) {
+  var body = {
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: maxTokens || 4000,
+    system: getBabySystem(),
+    messages: messages
+  };
+  if (useSearch) body.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
+
+  fetch('/api/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  })
+  .then(function(res) {
+    if (!res.ok) {
+      return res.text().then(function(t) {
+        var msg = 'HTTP ' + res.status + ' from /api/chat: ' + t.slice(0, 300);
+        showErrorBar(msg);
+        throw new Error(msg);
+      });
+    }
+    return res.json();
+  })
+  .then(function(data) {
+    if (data.error) {
+      var msg = 'Anthropic error: ' + (data.error.message || JSON.stringify(data.error));
+      showErrorBar(msg);
+      throw new Error(msg);
+    }
+    var blocks = (data.content || []).filter(function(b) { return b.type === 'text'; });
+    var text = blocks.map(function(b) { return b.text; }).join('\n').trim();
+    callback(null, text);
+  })
+  .catch(function(err) {
+    if (!err.message.includes('/api/chat') && !err.message.includes('Anthropic')) {
+      showErrorBar(err.name + ': ' + err.message);
+    }
+    callback(err, null);
+  });
+}
+
+function parseJson(text) {
+  try {
+    var cleaned = text.replace(/```json|```/g, '').trim();
+    var depth = 0, start = -1, end = -1;
+    for (var i = 0; i < cleaned.length; i++) {
+      if (cleaned[i] === '{') { if (depth === 0) start = i; depth++; }
+      else if (cleaned[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
+    }
+    if (start !== -1 && end !== -1) return JSON.parse(cleaned.slice(start, end + 1));
+  } catch(e) { console.warn('parseJson failed:', e); }
+  return null;
+}
+function parseGuide(text) { return parseJson(text); }
+
+function buildGuide() {
+  if (isTyping) return;
+  isTyping = true;
+  showSearchStatus();
+  callBaby(chatHistory, true, 4000, function(err, text) {
+    removeSearchStatus();
+    if (err) {
+      console.error('buildGuide error:', err);
+      isTyping = false;
+      addBubble('baby', 'Hit a wall on my end. Want to try again?', ['try again', 'different vibe']);
+      return;
+    }
+    chatHistory.push({ role: 'assistant', content: text });
+    var parsed = parseGuide(text);
+    if (parsed && parsed.type === 'guide') {
+      guideBuilt = true;
+      renderGuide(parsed);
+    } else if (text) {
+      addBubble('baby', text, getContextualReplies('guide'));
+    } else {
+      addBubble('baby', "Couldn't find anything solid. Want to try a different direction?", ['different vibe', 'just music', 'free stuff']);
+    }
+    isTyping = false;
+  });
+}
+
+function sendMessage() {
+  var input = document.getElementById('chat-input');
+  var text = input.value.trim();
+  if (!text || isTyping) return;
+  input.value = '';
+  markUsed(text);
+
+  if (awaitingFeedback) {
+    awaitingFeedback = false;
+    addBubble('user', text);
+    chatHistory.push({ role: 'user', content: text });
+    var positive = /yeah|yes|looks|good|love|great|perfect|those|some|sure|all|most|few|into|nice|solid|cool/i.test(text);
+    if (positive || likedCards.length > 0) {
+      setTimeout(showFollowupOptions, 350);
+    } else {
+      addBubble('baby', "Fair. Tell me what direction to go and I will pull something different.", ['different vibe', 'just music', 'free stuff only', 'food first']);
+    }
+    return;
+  }
+
+  messageCount++;
+  addBubble('user', text);
+  chatHistory.push({ role: 'user', content: text });
+
+  // Show PDF prompt after 3rd user message if guide is built
+  if (messageCount === 3 && guideBuilt && !pdfPromptShown) {
+    pdfPromptShown = true;
+    setTimeout(showPdfPrompt, 400);
+  }
+
+  var guideWords = ['guide','picks','good','happening','tonight','show me','build','surprise','free','music','day trip','trip'];
+  var lc = text.toLowerCase();
+  var wantsGuide = !guideBuilt;
+  for (var i = 0; i < guideWords.length; i++) {
+    if (lc.indexOf(guideWords[i]) > -1) { wantsGuide = true; break; }
+  }
+  if (wantsGuide && !guideBuilt) { buildGuide(); return; }
+
+  isTyping = true;
+  showTyping();
+  var needsSearch = /dinner|restaurant|bar|show|concert|ticket|weather|forecast|reserve|book|resy|opentable|nearby|around|after/i.test(text);
+  callBaby(chatHistory, needsSearch, 1200, function(err, text) {
+    removeTyping();
+    isTyping = false;
+    if (err) {
+      console.error('sendMessage error:', err);
+      addBubble('baby', 'Lost the signal. Try again?', ['try again']);
+      return;
+    }
+    chatHistory.push({ role: 'assistant', content: text });
+    var parsed = parseJson(text);
+    if (parsed && parsed.type === 'guide') {
+      guideBuilt = true;
+      renderGuide(parsed);
+    } else if (parsed && parsed.type === 'weather') {
+      // Split: show short text intro as bubble, then weather card
+      if (parsed.intro) addBubble('baby', parsed.intro, []);
+      renderWeatherCard(parsed);
+      addBubble('baby', 'Anything else you want to know before you head out?', getContextualReplies('weather'));
+    } else {
+      // Strip any URLs from text before showing in bubble
+      var cleanText = stripUrls(text);
+      addBubble('baby', cleanText, getContextualReplies(text));
+    }
+  });
+}
+
+function stripUrls(text) {
+  // Remove bare URLs from text -- links belong on cards only
+  return text.replace(/https?:\/\/[^\s)>\]"]+/g, '').replace(/\s{2,}/g, ' ').trim();
+}
+
+function markUsed(text) { usedReplies[text.toLowerCase().trim()] = true; }
+
+function getContextualReplies(context) {
+  var c = (context || '').toLowerCase();
+  var pool;
+  // After dinner/restaurant response -- offer next steps, not dinner again
+  if (c.indexOf('dinner') > -1 || c.indexOf('restaurant') > -1 || c.indexOf('reserv') > -1) {
+    pool = ['late night drinks after?', 'what is nearby?', "what's the weather?", 'send me the itinerary'];
+  // After music/show response -- offer tickets, timing, not music again
+  } else if (c.indexOf('music') > -1 || c.indexOf('show') > -1 || c.indexOf('concert') > -1) {
+    pool = ['buy tickets', 'late night after?', 'dinner before?', 'more picks'];
+  // After weather -- move forward
+  } else if (c.indexOf('weather') > -1 || c.indexOf('forecast') > -1) {
+    pool = ['dinner plans?', 'late night drinks?', 'send me the itinerary', 'more picks'];
+  // After late night / drinks
+  } else if (c.indexOf('late night') > -1 || c.indexOf('drink') > -1 || c.indexOf('bar') > -1) {
+    pool = ['dinner before that?', "what's the weather?", 'send me the itinerary', 'more picks'];
+  // Guide built, general state
+  } else if (guideBuilt) {
+    pool = ["what's the weather?", 'dinner plans?', 'late night drinks?', 'send me the itinerary'];
+  } else if (c === 'guide') {
+    pool = ['make me a guide', "what's tonight?", 'day trip ideas', 'free stuff only'];
+  } else {
+    pool = ['more picks', 'different vibe', "what's free?", 'make me a guide'];
+  }
+  // Always exclude what was just used or asked about
+  return pool.filter(function(r) { return !usedReplies[r.toLowerCase()]; });
+}
+
+function updateLikedHint() {
+  var hint = document.getElementById('liked-hint');
+  if (!hint) return;
+  if (likedCards.length === 0) {
+    hint.textContent = 'tap the ones that look good';
+    // Remove the picked banner bubble if it exists
+    var banner = document.getElementById('picked-banner-bubble');
+    if (banner) banner.remove();
+  } else {
+    hint.textContent = 'tap more or scroll down to continue';
+    // Show or update a user-style bubble below the cards
+    var existing = document.getElementById('picked-banner-bubble');
+    var msgs = document.getElementById('chat-messages');
+    var pickText = likedCards.length === 1
+      ? 'I picked the ones I like.'
+      : 'I picked the ones I like (' + likedCards.length + ' selected).';
+    if (!existing) {
+      var wrap = document.createElement('div');
+      wrap.className = 'msg user';
+      wrap.id = 'picked-banner-bubble';
+      var av = document.createElement('div');
+      av.className = 'avatar';
+      av.textContent = userData.name ? userData.name[0].toUpperCase() : '?';
+      var bub = document.createElement('div');
+      bub.className = 'bubble';
+      bub.id = 'picked-banner-text';
+      bub.textContent = pickText;
+      wrap.appendChild(av);
+      wrap.appendChild(bub);
+      msgs.appendChild(wrap);
+      msgs.scrollTop = msgs.scrollHeight;
+    } else {
+      var txt = document.getElementById('picked-banner-text');
+      if (txt) txt.textContent = pickText;
+    }
+  }
+}
+
+function renderGuide(data) {
+  var msgs = document.getElementById('chat-messages');
+
+  var intro = document.createElement('div');
+  intro.className = 'guide-intro';
+  intro.textContent = data.intro || "Here's what I've got.";
+  msgs.appendChild(intro);
+
+  var hint = document.createElement('div');
+  hint.className = 'click-hint';
+  hint.id = 'liked-hint';
+  hint.textContent = 'tap the ones that look good';
+  msgs.appendChild(hint);
+
+  var wrap = document.createElement('div');
+  wrap.className = 'guide-cards-wrap';
+
+  var picks = data.picks || [];
+  for (var i = 0; i < picks.length; i++) {
+    (function(pick, idx) {
+      var card = document.createElement('div');
+      card.className = 'guide-card vibe-' + (pick.vibe_type || 'default');
+      card.style.animationDelay = (idx * 0.07) + 's';
+
+      var heart = document.createElement('span');
+      heart.className = 'like-heart';
+      heart.textContent = '(v)';
+      card.appendChild(heart);
+
+      var top = document.createElement('div');
+      top.className = 'card-top';
+      var nameEl = document.createElement('div');
+      nameEl.className = 'guide-card-name';
+      nameEl.textContent = pick.name;
+      top.appendChild(nameEl);
+      if (pick.vibe_tag) {
+        var tag = document.createElement('div');
+        tag.className = 'guide-vibe-tag';
+        tag.textContent = pick.vibe_tag;
+        top.appendChild(tag);
+      }
+      card.appendChild(top);
+
+      if (pick.description) {
+        var desc = document.createElement('div');
+        desc.className = 'guide-card-desc';
+        desc.textContent = pick.description;
+        card.appendChild(desc);
+      }
+
+      if (pick.baby_take) {
+        var tw = document.createElement('div');
+        tw.className = 'guide-card-baby';
+        var lbl = document.createElement('span');
+        lbl.className = 'baby-take-label';
+        lbl.textContent = 'Baby says';
+        tw.appendChild(lbl);
+        tw.appendChild(document.createTextNode(pick.baby_take));
+        card.appendChild(tw);
+      }
+
+      var meta = document.createElement('div');
+      meta.className = 'guide-card-meta';
+      var metaItems = [pick.neighborhood, pick.when].filter(Boolean);
+      for (var m = 0; m < metaItems.length; m++) {
+        if (m > 0) {
+          var sep = document.createElement('span');
+          sep.className = 'guide-meta-sep';
+          sep.textContent = ' | ';
+          meta.appendChild(sep);
+        }
+        var pill = document.createElement('div');
+        pill.className = 'guide-meta-pill';
+        pill.textContent = metaItems[m];
+        meta.appendChild(pill);
+      }
+      if (meta.children.length) card.appendChild(meta);
+
+      var linksRow = document.createElement('div');
+      linksRow.style.cssText = 'display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:4px;';
+      if (pick.url && pick.url !== 'null') {
+        var link = document.createElement('a');
+        link.className = 'card-link';
+        link.href = pick.url;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.textContent = 'View event';
+        linksRow.appendChild(link);
+      }
+      if (pick.reservation && pick.reservation !== 'none' && pick.reservation !== 'call') {
+        var rPill = document.createElement('span');
+        rPill.className = 'resv-pill';
+        var rLabel = pick.reservation === 'opentable' ? 'OpenTable' : pick.reservation === 'resy' ? 'Resy' : pick.reservation;
+        rPill.textContent = 'Reserve: ' + rLabel;
+        linksRow.appendChild(rPill);
+      }
+      if (linksRow.children.length) card.appendChild(linksRow);
+
+      card.addEventListener('click', function(e) {
+        if (e.target.tagName === 'A') return;
+        card.classList.toggle('liked');
+        var liked = card.classList.contains('liked');
+        var nameIdx = likedCards.indexOf(pick.name);
+        if (liked && nameIdx === -1) likedCards.push(pick.name);
+        else if (!liked && nameIdx > -1) likedCards.splice(nameIdx, 1);
+        updateLikedHint();
+      });
+
+      wrap.appendChild(card);
+    })(picks[i], i);
+  }
+
+  msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  setTimeout(function() {
+    awaitingFeedback = true;
+    var fb = 'What do you think? Anything here look good? Tap the cards that catch your eye.';
+    chatHistory.push({ role: 'assistant', content: fb });
+    addBubble('baby', fb, ['yeah, a few of these', 'love some of these', 'not really -- try again', 'all of it']);
+  }, 900);
+}
+
+function renderWeatherCard(data) {
+  var msgs = document.getElementById('chat-messages');
+  var card = document.createElement('div');
+  card.className = 'weather-card';
+  var title = document.createElement('div');
+  title.className = 'weather-card-title';
+  title.textContent = 'New Orleans Weather Forecast';
+  card.appendChild(title);
+  var days = document.createElement('div');
+  days.className = 'weather-days';
+  var icons = { sunny: '&#x2600;', hot: '&#x1F525;', cloudy: '&#x26C5;', rainy: '&#x1F327;', stormy: '&#x26C8;', cool: '&#x1F4A8;', partly: '&#x26C5;' };
+  var weatherDays = data.days || [];
+  for (var i = 0; i < weatherDays.length; i++) {
+    var d = weatherDays[i];
+    var dayEl = document.createElement('div');
+    dayEl.className = 'weather-day';
+    var dayName = document.createElement('div');
+    dayName.className = 'weather-day-name';
+    dayName.textContent = d.day || '';
+    var iconEl = document.createElement('div');
+    iconEl.className = 'weather-day-icon';
+    iconEl.innerHTML = icons[d.icon] || '&#x1F324;';
+    var temp = document.createElement('div');
+    temp.className = 'weather-day-temp';
+    temp.textContent = (d.high || '--') + (d.low ? ' / ' + d.low : '') + String.fromCodePoint(0xB0) + 'F';
+    var desc = document.createElement('div');
+    desc.className = 'weather-day-desc';
+    desc.textContent = d.desc || '';
+    dayEl.appendChild(dayName);
+    dayEl.appendChild(iconEl);
+    dayEl.appendChild(temp);
+    dayEl.appendChild(desc);
+    days.appendChild(dayEl);
+  }
+  card.appendChild(days);
+  msgs.appendChild(card);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showPdfPrompt() {
+  var msgs = document.getElementById('chat-messages');
+  var wrap = document.createElement('div');
+  wrap.className = 'pdf-prompt';
+  var txt = document.createElement('div');
+  txt.className = 'pdf-prompt-text';
+  txt.textContent = 'Want all of this in one place? I can build you a PDF guide to save or share.';
+  var btn = document.createElement('button');
+  btn.className = 'pdf-prompt-btn';
+  btn.textContent = 'Build my PDF guide';
+  btn.addEventListener('click', function() {
+    wrap.remove();
+    markUsed('build pdf guide');
+    document.getElementById('chat-input').value = 'Build me a PDF guide of everything we have planned.';
+    sendMessage();
+  });
+  var dismiss = document.createElement('button');
+  dismiss.style.cssText = 'background:transparent;border:none;color:var(--text-dim);font-size:11px;cursor:pointer;padding:4px;font-family:DM Mono,monospace;';
+  dismiss.textContent = 'not yet';
+  dismiss.addEventListener('click', function() { wrap.remove(); });
+  var btnGroup = document.createElement('div');
+  btnGroup.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;';
+  btnGroup.appendChild(btn);
+  btnGroup.appendChild(dismiss);
+  wrap.appendChild(txt);
+  wrap.appendChild(btnGroup);
+  msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showFollowupOptions() {
+  var msgs = document.getElementById('chat-messages');
+  var likedCtx = likedCards.length
+    ? 'I liked these: ' + likedCards.join(', ') + '.'
+    : "I am open -- nothing specific but the guide looked good.";
+  chatHistory.push({ role: 'user', content: likedCtx });
+
+  var likedStr = likedCards.length
+    ? 'Good choices. I can help build out the rest around ' + (likedCards.length === 1 ? likedCards[0] : 'what you liked') + '.'
+    : 'Good. Here are a few ways I can fill in the rest.';
+  chatHistory.push({ role: 'assistant', content: likedStr });
+  addBubble('baby', likedStr);
+
+  var block = document.createElement('div');
+  block.className = 'followup-block';
+  var title = document.createElement('div');
+  title.className = 'followup-title';
+  title.textContent = 'What else do you need?';
+  block.appendChild(title);
+
+  var opts = document.createElement('div');
+  opts.className = 'followup-options';
+
+  var options = [
+    { label: 'Dinner plans around this', msg: 'Suggest dinner plans around what I liked. Check OpenTable and Resy for availability.' },
+    { label: 'Late night drinks after', msg: 'Good late night drink spots near what I picked?' },
+    { label: "What's the weather?", msg: "What is the weather looking like for New Orleans this week?" },
+    { label: 'More nearby options', msg: 'What else could I do nearby to fill in around these picks?' },
+    { label: 'Send me the itinerary', msg: 'I want to save this itinerary.' },
+    { label: "I'm good -- thanks", msg: "I am happy with this, that is all I need." }
+  ];
+
+  for (var i = 0; i < options.length; i++) {
+    if (usedReplies[options[i].msg.toLowerCase().trim()]) continue;
+    (function(opt) {
+      var btn = document.createElement('button');
+      btn.className = 'followup-btn';
+      btn.textContent = opt.label;
+      btn.addEventListener('click', function() {
+        block.remove();
+        markUsed(opt.msg);
+        if (opt.msg.indexOf('happy with this') > -1) {
+          addBubble('user', opt.msg);
+          chatHistory.push({ role: 'user', content: opt.msg });
+          addBubble('baby', 'Nice. Go have a good one.');
+          if (!smsPromptShown) { smsPromptShown = true; setTimeout(showSmsPrompt, 700); }
+          else if (!userData.hasAccount && !accountPromptShown) { accountPromptShown = true; setTimeout(showAccountPrompt, 700); }
+        } else if (opt.msg.indexOf('itinerary') > -1) {
+          showSmsPrompt();
+        } else {
+          document.getElementById('chat-input').value = opt.msg;
+          sendMessage();
+        }
+      });
+      opts.appendChild(btn);
+    })(options[i]);
+  }
+
+  block.appendChild(opts);
+  msgs.appendChild(block);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showSmsPrompt() {
+  var msgs = document.getElementById('chat-messages');
+  var block = document.createElement('div');
+  block.className = 'sms-block';
+  block.id = 'sms-block';
+  var title = document.createElement('div');
+  title.className = 'sms-block-title';
+  title.textContent = 'Want this sent to your phone?';
+  var sub = document.createElement('div');
+  sub.className = 'sms-block-sub';
+  sub.textContent = 'Baby can text you a branded itinerary card with your picks.';
+  var inp = document.createElement('input');
+  inp.type = 'tel';
+  inp.className = 'account-mini-input';
+  inp.id = 'sms-phone';
+  inp.placeholder = '(504) 555-0100';
+  inp.style.marginBottom = '0';
+  var note = document.createElement('div');
+  note.className = 'sms-note';
+  note.textContent = 'Standard messaging rates apply.';
+  var btns = document.createElement('div');
+  btns.className = 'sms-btns';
+  var send = document.createElement('button');
+  send.className = 'sms-btn sms-btn-send';
+  send.textContent = 'Text it to me';
+  send.addEventListener('click', submitSms);
+  var skip = document.createElement('button');
+  skip.className = 'sms-btn sms-btn-skip';
+  skip.textContent = 'Skip';
+  skip.addEventListener('click', function() {
+    block.remove();
+    showAccountPromptIfNeeded();
+  });
+  btns.appendChild(send);
+  btns.appendChild(skip);
+  block.appendChild(title);
+  block.appendChild(sub);
+  block.appendChild(inp);
+  block.appendChild(note);
+  block.appendChild(btns);
+  msgs.appendChild(block);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function submitSms() {
+  var phone = document.getElementById('sms-phone') ? document.getElementById('sms-phone').value.trim() : '';
+  var block = document.getElementById('sms-block');
+  if (block) block.remove();
+  userData.phone = phone;
+  if (phone) {
+    addBubble('baby', 'Got it. In a live version I would send your itinerary to ' + phone + ' right now. For now -- screenshot the picks. Want to save your profile while we are at it?', ['yes, save my profile', 'nah I am good']);
+  } else {
+    showAccountPromptIfNeeded();
+  }
+}
+
+function showAccountPromptIfNeeded() {
+  if (!userData.hasAccount && !accountPromptShown) { accountPromptShown = true; showAccountPrompt(); }
+}
+
+function showAccountPrompt() {
+  var msgs = document.getElementById('chat-messages');
+  var banner = document.createElement('div');
+  banner.className = 'account-banner';
+  banner.id = 'account-banner';
+  var t = document.createElement('div'); t.className = 'account-banner-title'; t.textContent = 'Want Baby to remember you?';
+  var s = document.createElement('div'); s.className = 'account-banner-sub'; s.textContent = 'Save your neighborhood and vibe so next time Baby already knows what you are about.';
+  var n = document.createElement('input'); n.type = 'text'; n.className = 'account-mini-input'; n.id = 'acct-name'; n.placeholder = 'First name (optional)';
+  var h = document.createElement('input'); h.type = 'text'; h.className = 'account-mini-input'; h.id = 'acct-hood'; h.placeholder = 'Your neighborhood (optional)';
+  var btns = document.createElement('div'); btns.className = 'account-banner-btns';
+  var yes = document.createElement('button'); yes.className = 'acct-btn acct-btn-yes'; yes.textContent = 'Save my profile'; yes.addEventListener('click', saveAccount);
+  var no = document.createElement('button'); no.className = 'acct-btn acct-btn-no'; no.textContent = 'Nah, I am good'; no.addEventListener('click', dismissAccount);
+  btns.appendChild(yes); btns.appendChild(no);
+  banner.appendChild(t); banner.appendChild(s); banner.appendChild(n); banner.appendChild(h); banner.appendChild(btns);
+  msgs.appendChild(banner);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function saveAccount() {
+  var nameEl = document.getElementById('acct-name');
+  var hoodEl = document.getElementById('acct-hood');
+  var name = nameEl ? nameEl.value.trim() : '';
+  var hood = hoodEl ? hoodEl.value.trim() : '';
+  if (name) userData.name = name;
+  if (hood) userData.neighborhood = hood;
+  userData.hasAccount = true;
+  var banner = document.getElementById('account-banner');
+  if (banner) banner.remove();
+  if (name) {
+    var badge = document.getElementById('user-badge');
+    badge.textContent = 'Hey, ' + name;
+    badge.className = 'header-badge visible';
+  }
+  addBubble('baby', name ? 'Saved, ' + name + '. Next time I will already know what you are about. Anything else before you go?' : 'Saved. Come back whenever -- Baby will be here.');
+}
+
+function dismissAccount() {
+  var banner = document.getElementById('account-banner');
+  if (banner) banner.remove();
+  addBubble('baby', 'Cool. Come back whenever.');
+}
+
+function addBubble(role, text, qrs) {
+  var msgs = document.getElementById('chat-messages');
+  var wrap = document.createElement('div');
+  wrap.className = 'msg ' + role;
+  var av = document.createElement('div');
+  av.className = 'avatar';
+  av.textContent = role === 'baby' ? String.fromCodePoint(0x1F43E) : (userData.name ? userData.name[0].toUpperCase() : '?');
+  var bub = document.createElement('div');
+  bub.className = 'bubble';
+  bub.textContent = text;
+  wrap.appendChild(av);
+  wrap.appendChild(bub);
+  msgs.appendChild(wrap);
+  if (qrs && qrs.length) {
+    var row = document.createElement('div');
+    row.className = 'qr-row';
+    var filtered = qrs.filter(function(r) { return r && !usedReplies[r.toLowerCase().trim()]; });
+    for (var i = 0; i < filtered.length; i++) {
+      (function(qr) {
+        var btn = document.createElement('button');
+        btn.className = 'qr';
+        btn.textContent = qr;
+        btn.addEventListener('click', function() {
+          markUsed(qr);
+          document.getElementById('chat-input').value = qr;
+          sendMessage();
+        });
+        row.appendChild(btn);
+      })(filtered[i]);
+    }
+    if (row.children.length) msgs.appendChild(row);
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  var msgs = document.getElementById('chat-messages');
+  var el = document.createElement('div');
+  el.className = 'msg baby';
+  el.id = 'typing-ind';
+  var av = document.createElement('div');
+  av.className = 'avatar';
+  av.textContent = String.fromCodePoint(0x1F43E);
+  var bub = document.createElement('div');
+  bub.className = 'bubble';
+  var dots = document.createElement('div');
+  dots.className = 'typing-dots';
+  for (var i = 0; i < 3; i++) {
+    var d = document.createElement('div');
+    d.className = 'typing-dot';
+    dots.appendChild(d);
+  }
+  bub.appendChild(dots);
+  el.appendChild(av);
+  el.appendChild(bub);
+  msgs.appendChild(el);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() {
+  var el = document.getElementById('typing-ind');
+  if (el) el.remove();
+}
+
+function showSearchStatus() {
+  var msgs = document.getElementById('chat-messages');
+  var s = document.createElement('div');
+  s.className = 'search-status';
+  s.id = 'search-stat';
+  s.textContent = cheekies[Math.floor(Math.random() * cheekies.length)];
+  msgs.appendChild(s);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeSearchStatus() {
+  var el = document.getElementById('search-stat');
+  if (el) el.remove();
+}
+
+function startChatNew() {
+  var time = vibeSelections.time;
+  var mood = vibeSelections.mood;
+  var hood = vibeSelections.hood;
+  var hasVibe = time || mood.length || hood;
+  var moodSnip = mood.length ? ' Into ' + mood.slice(0,2).join(' and ') + '.' : '';
+  var greeting = hasVibe
+    ? 'Alright' + (time ? ', ' + time : '') + '.' + moodSnip + ' Give me a second.'
+    : 'Alright. Tell me what you are trying to do and I will find something worth doing.';
+  // History must start with a user message -- seed with vibe summary
+  var vibeCtx = 'I am looking for things to do' + (time ? ' ' + time : '') + (mood.length ? ', interested in ' + mood.join(', ') : '') + (hood ? ', near ' + hood : '') + '.';
+  chatHistory = [{ role: 'user', content: vibeCtx }];
+  document.getElementById('chat-messages').innerHTML = '';
+  addBubble('baby', greeting, hasVibe ? [] : ['tonight', 'this weekend', 'day trip', 'just surprise me']);
+  if (hasVibe) setTimeout(buildGuide, 700);
+}
+
+function startChatReturning() {
+  var greeting = userData.name + '. You are back. What are we doing?';
+  // History must start with user message
+  chatHistory = [{ role: 'user', content: 'I am back, build me a guide.' }];
+  document.getElementById('chat-messages').innerHTML = '';
+  addBubble('baby', greeting, ['build my guide', "what's free?", 'music tonight', 'day trip']);
+}
+
+// INIT
+document.getElementById('email-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') submitEmail();
+});
+document.getElementById('chat-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') sendMessage();
+});
+document.getElementById('send-btn').addEventListener('click', sendMessage);
+document.getElementById('resend-link').addEventListener('click', resendCode);
+setupCodeInputs();
+
+var tiles = document.querySelectorAll('.tile');
+for (var t = 0; t < tiles.length; t++) {
+  (function(tile) {
+    tile.addEventListener('click', function() {
+      if (tile.dataset.group === 'mood') selectMulti(tile);
+      else selectTile(tile);
+    });
+  })(tiles[t]);
+}
+</script>
+</body>
+</html>
